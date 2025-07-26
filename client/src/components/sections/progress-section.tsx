@@ -4,12 +4,16 @@ import { Button } from "@/components/ui/button";
 import { roadmapPhases } from "@/lib/roadmap-data";
 import { useSwipe } from "@/hooks/use-swipe";
 import { cn } from "@/lib/utils";
+import { useUserProgress, useUpdateProgress } from "@/hooks/use-roadmap-data";
 
 interface ProgressSectionProps {
   onNavigate: (section: number) => void;
 }
 
 export function ProgressSection({ onNavigate }: ProgressSectionProps) {
+  const { data: userProgress, isLoading } = useUserProgress();
+  const updateProgressMutation = useUpdateProgress();
+
   const swipeHandlers = useSwipe({
     onSwipeLeft: () => onNavigate(2),
     onSwipeRight: () => onNavigate(0),
@@ -26,6 +30,27 @@ export function ProgressSection({ onNavigate }: ProgressSectionProps) {
     return gradientMap[gradient as keyof typeof gradientMap] || "from-blue-500 to-purple-500";
   };
 
+  const getPhasesWithProgress = () => {
+    if (!userProgress) return roadmapPhases;
+    
+    return roadmapPhases.map(phase => {
+      const userPhase = userProgress.find((up: any) => up.phase === phase.id);
+      return {
+        ...phase,
+        progress: userPhase?.progress || phase.progress
+      };
+    });
+  };
+
+  const handlePhaseClick = (phaseId: number, currentProgress: number) => {
+    const nextProgress = Math.min(currentProgress + 10, 100);
+    updateProgressMutation.mutate({
+      phase: phaseId,
+      progress: nextProgress,
+      completedTasks: []
+    });
+  };
+
   return (
     <section 
       className="section-height relative px-4 py-8 flex flex-col justify-center"
@@ -40,32 +65,44 @@ export function ProgressSection({ onNavigate }: ProgressSectionProps) {
         </div>
         
         {/* Progress Cards */}
-        <div className="space-y-4 mb-8">
-          {roadmapPhases.map((phase) => (
-            <GlassCard key={phase.id} className="p-6">
-              <div className="flex items-center mb-4">
-                <div className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center mr-4 bg-gradient-to-r",
-                  getGradientClasses(phase.gradient)
-                )}>
-                  <span className="text-white font-bold">{phase.id}</span>
+        {isLoading ? (
+          <div className="space-y-4 mb-8">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-24 bg-gray-700/50 rounded-2xl animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-4 mb-8">
+            {getPhasesWithProgress().map((phase) => (
+              <GlassCard 
+                key={phase.id} 
+                className="p-6 cursor-pointer hover:bg-white/5 transition-colors"
+                onClick={() => handlePhaseClick(phase.id, phase.progress)}
+              >
+                <div className="flex items-center mb-4">
+                  <div className={cn(
+                    "w-12 h-12 rounded-xl flex items-center justify-center mr-4 bg-gradient-to-r",
+                    getGradientClasses(phase.gradient)
+                  )}>
+                    <span className="text-white font-bold">{phase.id}</span>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-white">{phase.title}</h3>
+                    <p className="text-gray-400 text-sm">{phase.duration}</p>
+                  </div>
+                  <div className="w-16">
+                    <ProgressBar 
+                      progress={phase.progress} 
+                      gradient={getGradientClasses(phase.gradient)}
+                      size="sm"
+                    />
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold text-white">{phase.title}</h3>
-                  <p className="text-gray-400 text-sm">{phase.duration}</p>
-                </div>
-                <div className="w-16">
-                  <ProgressBar 
-                    progress={phase.progress} 
-                    gradient={getGradientClasses(phase.gradient)}
-                    size="sm"
-                  />
-                </div>
-              </div>
-              <p className="text-gray-300 text-sm leading-relaxed">{phase.description}</p>
-            </GlassCard>
-          ))}
-        </div>
+                <p className="text-gray-300 text-sm leading-relaxed">{phase.description}</p>
+              </GlassCard>
+            ))}
+          </div>
+        )}
         
         {/* Action Button */}
         <Button className="w-full touch-target bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600 rounded-2xl font-semibold shadow-lg transform transition-all duration-200 active:scale-95 border-0">

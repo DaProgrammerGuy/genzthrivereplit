@@ -6,6 +6,7 @@ interface SkillMeterProps {
   level: number;
   color: string;
   className?: string;
+  onClick?: () => void;
 }
 
 const colorMap = {
@@ -15,11 +16,14 @@ const colorMap = {
   "hot-pink": "from-pink-400 to-rose-500"
 };
 
-export function SkillMeter({ name, level, color, className }: SkillMeterProps) {
+export function SkillMeter({ name, level, color, className, onClick }: SkillMeterProps) {
   const gradient = colorMap[color as keyof typeof colorMap] || "from-gray-400 to-gray-600";
 
   return (
-    <div className={cn("flex items-center justify-between text-sm", className)}>
+    <div 
+      className={cn("flex items-center justify-between text-sm", onClick && "cursor-pointer hover:bg-white/5 p-2 rounded-lg transition-colors", className)}
+      onClick={onClick}
+    >
       <span className="text-gray-300 flex-1">{name}</span>
       <div className="w-20 ml-3">
         <ProgressBar progress={level} gradient={gradient} size="sm" />

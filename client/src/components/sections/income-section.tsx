@@ -1,21 +1,17 @@
-import { useState } from "react";
 import { GlassCard } from "@/components/ui/glass-card";
 import { IncomeCard } from "@/components/ui/income-card";
 import { Button } from "@/components/ui/button";
 import { incomeStreams } from "@/lib/roadmap-data";
 import { useSwipe } from "@/hooks/use-swipe";
+import { useUserIncomeStreams, useUpdateIncomeStream } from "@/hooks/use-roadmap-data";
 
 interface IncomeSectionProps {
   onNavigate: (section: number) => void;
 }
 
 export function IncomeSection({ onNavigate }: IncomeSectionProps) {
-  const [activeStreams, setActiveStreams] = useState(
-    incomeStreams.reduce((acc, stream) => ({
-      ...acc,
-      [stream.id]: stream.isActive
-    }), {} as Record<string, boolean>)
-  );
+  const { data: userIncomeStreams, isLoading } = useUserIncomeStreams();
+  const updateIncomeStreamMutation = useUpdateIncomeStream();
 
   const swipeHandlers = useSwipe({
     onSwipeLeft: () => onNavigate(4),
@@ -23,19 +19,29 @@ export function IncomeSection({ onNavigate }: IncomeSectionProps) {
     onSwipeUp: () => onNavigate(4)
   });
 
-  const toggleStream = (streamId: string) => {
-    setActiveStreams(prev => ({
-      ...prev,
-      [streamId]: !prev[streamId]
-    }));
+  const toggleStream = (streamType: string) => {
+    const currentStream = userIncomeStreams?.find(s => s.streamType === streamType);
+    if (currentStream) {
+      updateIncomeStreamMutation.mutate({
+        streamType,
+        isActive: !currentStream.isActive,
+        monthlyRevenue: currentStream.monthlyRevenue
+      });
+    }
   };
 
   const calculateTotalIncome = () => {
-    const activeStreamsList = incomeStreams.filter(stream => activeStreams[stream.id]);
-    const minTotal = activeStreamsList.reduce((sum, stream) => sum + stream.minIncome, 0);
-    const maxTotal = activeStreamsList.reduce((sum, stream) => sum + stream.maxIncome, 0);
+    if (!userIncomeStreams) return { min: 0, max: 0 };
     
-    return { min: minTotal, max: maxTotal };
+    const activeStreams = userIncomeStreams.filter((stream: any) => stream.isActive);
+    const total = activeStreams.reduce((sum: number, stream: any) => sum + stream.monthlyRevenue, 0);
+    
+    // Calculate potential based on static data
+    const activeStreamTypes = activeStreams.map((s: any) => s.streamType);
+    const potentialStreams = incomeStreams.filter((s: any) => activeStreamTypes.includes(s.id));
+    const maxPotential = potentialStreams.reduce((sum: number, stream: any) => sum + stream.maxIncome, 0);
+    
+    return { min: total, max: Math.max(total, maxPotential) };
   };
 
   const formatIncome = (amount: number) => {
@@ -61,16 +67,27 @@ export function IncomeSection({ onNavigate }: IncomeSectionProps) {
         </div>
         
         {/* Income Stream Cards */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          {incomeStreams.map((stream) => (
-            <IncomeCard
-              key={stream.id}
-              {...stream}
-              isActive={activeStreams[stream.id]}
-              onClick={() => toggleStream(stream.id)}
-            />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-32 bg-gray-700/50 rounded-2xl animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 mb-8">
+            {incomeStreams.map((stream) => {
+              const userStream = userIncomeStreams?.find((us: any) => us.streamType === stream.id);
+              return (
+                <IncomeCard
+                  key={stream.id}
+                  {...stream}
+                  isActive={userStream?.isActive === 1 || false}
+                  onClick={() => toggleStream(stream.id)}
+                />
+              );
+            })}
+          </div>
+        )}
         
         {/* Total Potential */}
         <GlassCard className="p-6 text-center border-2 border-green-400/30">
