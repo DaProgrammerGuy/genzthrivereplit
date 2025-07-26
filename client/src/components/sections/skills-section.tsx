@@ -131,7 +131,7 @@ export function SkillsSection({ onNavigate }: SkillsSectionProps) {
                 <h3 className="font-semibold text-white flex-1">{getCategoryTitle('ai')}</h3>
                 <span className="text-green-400 text-sm font-medium">{getCategoryProgress(aiSkills)}%</span>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3 mb-4">
                 {aiSkills.map((skill) => (
                   <SkillMeter 
                     key={skill.name} 
@@ -139,6 +139,15 @@ export function SkillsSection({ onNavigate }: SkillsSectionProps) {
                     onClick={() => handleSkillClick(skill.name, 'ai', skill.level)}
                   />
                 ))}
+              </div>
+              <div className="text-center py-4 border-t border-gray-700/50">
+                <p className="text-gray-300 text-sm mb-4">Connect with the developer</p>
+                <Button 
+                  className="bg-gradient-to-r from-green-400 to-blue-500 hover:from-green-500 hover:to-blue-600 text-white px-6 py-2 rounded-xl text-sm font-medium touch-target transform transition-all duration-200 active:scale-95 border-0"
+                  onClick={() => window.open('https://linkedin.com/in/uzair-ahmed-me/', '_blank')}
+                >
+                  Start Learning
+                </Button>
               </div>
             </GlassCard>
           </div>

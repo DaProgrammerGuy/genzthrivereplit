@@ -4,6 +4,14 @@
 
 This is a React-based progressive web application designed to guide Gen Z professionals in Pakistan through a tech-business development roadmap. The application provides a mobile-first experience with interactive progress tracking, skills monitoring, and income stream management.
 
+## Recent Changes (January 2025)
+
+- **Database Integration**: Connected PostgreSQL database for persistent user data storage
+- **Interactive Features**: Added clickable skills, income streams, and roadmap phases for real-time progress updates
+- **API Integration**: Implemented REST API endpoints for progress, skills, and income data
+- **LinkedIn Integration**: Added "Start Learning" button linking to developer's LinkedIn profile (linkedin.com/in/uzair-ahmed-me/)
+- **Loading States**: Added skeleton loading animations throughout the application
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
