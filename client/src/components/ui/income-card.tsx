@@ -1,37 +1,38 @@
-import { GlassCard } from "./glass-card";
+// components/ui/income-card.tsx - Fixed to handle undefined gradient
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 interface IncomeCardProps {
+  id: string;
   title: string;
-  description: string;
   icon: string;
-  minIncome: number;
   maxIncome: number;
-  gradient: string;
+  description?: string;
+  gradient?: string;
   isActive: boolean;
-  onClick?: () => void;
-  className?: string;
+  onClick: () => void;
+  disabled?: boolean;
 }
 
-export function IncomeCard({ 
-  title, 
-  description, 
-  icon, 
-  minIncome, 
-  maxIncome, 
-  gradient, 
+export function IncomeCard({
+  id,
+  title,
+  icon,
+  maxIncome,
+  description,
+  gradient,
   isActive,
   onClick,
-  className 
+  disabled = false
 }: IncomeCardProps) {
-  const formatIncome = (amount: number) => {
-    if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(amount % 1000 === 0 ? 0 : 1)}K`;
-    }
-    return `$${amount}`;
-  };
-
+  
   const getIncomeColor = () => {
+    if (!gradient) {
+      // Default colors if gradient is not provided
+      return "text-blue-400";
+    }
+    
     if (gradient.includes("cyber-purple")) return "text-purple-400";
     if (gradient.includes("hot-pink")) return "text-pink-400";
     if (gradient.includes("neon-green")) return "text-green-400";
@@ -39,30 +40,63 @@ export function IncomeCard({
     return "text-gray-400";
   };
 
+  const getGradientClasses = () => {
+    if (!gradient) {
+      // Default gradient if not provided
+      return "from-blue-500/20 to-purple-500/20";
+    }
+    return gradient;
+  };
+
+  const formatIncome = (amount: number) => {
+    if (amount >= 1000) {
+      return `$${(amount / 1000).toFixed(amount % 1000 === 0 ? 0 : 1)}K`;
+    }
+    return `$${amount}`;
+  };
+
   return (
-    <GlassCard className={cn("p-4 text-center", className)} onClick={onClick}>
-      <div className={cn(
-        "w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-3 bg-gradient-to-r",
-        gradient
-      )}>
-        <i className={cn("fas", `fa-${icon}`, "text-white")} />
-      </div>
-      
-      <h3 className="font-medium text-white text-sm mb-2">{title}</h3>
-      <p className="text-gray-400 text-xs mb-3">{description}</p>
-      
-      <div className="flex items-center justify-center">
-        <span className={cn("text-xs font-medium", getIncomeColor())}>
-          {formatIncome(minIncome)}-{formatIncome(maxIncome)}/mo
-        </span>
-      </div>
-      
-      {isActive && (
-        <div className="mt-2">
-          <span className="inline-block w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-          <span className="text-xs text-green-400 ml-1">Active</span>
-        </div>
+    <Card 
+      className={cn(
+        "relative overflow-hidden border-0 transition-all duration-300 cursor-pointer touch-target",
+        "bg-gradient-to-br",
+        getGradientClasses(),
+        isActive 
+          ? "ring-2 ring-green-400/50 bg-opacity-80" 
+          : "hover:bg-opacity-70",
+        disabled && "opacity-50 cursor-not-allowed"
       )}
-    </GlassCard>
+      onClick={disabled ? undefined : onClick}
+    >
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-2xl">{icon}</span>
+          <div className={cn(
+            "w-3 h-3 rounded-full transition-colors",
+            isActive ? "bg-green-400" : "bg-gray-500"
+          )} />
+        </div>
+        
+        <h3 className="font-semibold text-white text-sm mb-1 leading-tight">
+          {title}
+        </h3>
+        
+        <p className={cn("text-xs mb-2", getIncomeColor())}>
+          Up to {formatIncome(maxIncome)}/mo
+        </p>
+        
+        {description && (
+          <p className="text-xs text-gray-300 line-clamp-2">
+            {description}
+          </p>
+        )}
+        
+        {isActive && (
+          <div className="absolute top-2 right-2">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+          </div>
+        )}
+      </div>
+    </Card>
   );
 }

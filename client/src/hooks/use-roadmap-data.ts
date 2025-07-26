@@ -60,12 +60,15 @@ export function useUserIncomeStreams() {
 
 export function useUpdateIncomeStream() {
   const queryClient = useQueryClient();
-  
   return useMutation({
-    mutationFn: ({ streamType, isActive, monthlyRevenue }: { streamType: string; isActive: boolean; monthlyRevenue?: number }) => 
-      updateIncomeStream(DEMO_USER_ID, streamType, isActive, monthlyRevenue || 0),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['income', DEMO_USER_ID] });
+    mutationFn: ({ userId, streamType, isActive, monthlyRevenue }: { userId: string; streamType: string; isActive: number; monthlyRevenue?: number }) => 
+      updateIncomeStream(userId, streamType, isActive, monthlyRevenue || 0),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['income', variables.userId] });
+    },
+    onError: (error) => {
+      // Optionally show a toast or log error
+      console.error('Failed to update income stream:', error);
     }
   });
 }

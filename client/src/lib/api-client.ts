@@ -86,12 +86,12 @@ export async function fetchUserIncomeStreams(userId: string = DEMO_USER_ID) {
   }
 }
 
-export async function updateIncomeStream(userId: string = DEMO_USER_ID, streamType: string, isActive: boolean, monthlyRevenue: number = 0) {
+export async function updateIncomeStream(userId: string, streamType: string, isActive: number, monthlyRevenue: number = 0) {
   try {
     const response = await fetch(`${API_BASE}/income`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, streamType, isActive: isActive ? 1 : 0, monthlyRevenue })
+      body: JSON.stringify({ userId, streamType, isActive, monthlyRevenue })
     });
     if (!response.ok) throw new Error('Failed to update income stream');
     return await response.json();

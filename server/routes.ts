@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserProgressSchema, insertSkillProgressSchema, insertIncomeStreamSchema } from "@shared/schema";
+import { eq } from "drizzle-orm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -48,9 +49,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get user income streams
-  app.get("/api/income/:userId", async (req, res) => {
+  app.get("/api/income/:userKey", async (req, res) => {
     try {
-      const streams = await storage.getUserIncomeStreams(req.params.userId);
+      let userId = req.params.userKey;
+      // If not a valid UUID, treat as username
+      if (!/^([a-f\d]{8}(-[a-f\d]{4}){3}-[a-f\d]{12})$/i.test(userId)) {
+        const user = await storage.getUserByUsername(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        userId = user.id;
+      }
+      const streams = await storage.getUserIncomeStreams(userId);
       res.json(streams || []);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch income streams" });
