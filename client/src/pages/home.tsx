@@ -73,25 +73,29 @@ export default function Home() {
     return () => document.removeEventListener('touchstart', handleTouchStart);
   }, []);
 
+  const { isPulling, isRefreshing, pullDistance, onTouchStart, onTouchMove, onTouchEnd, resetPull, showIndicator } = pullToRefresh;
+
   return (
     <div 
       className="min-h-screen bg-gray-900 text-white overflow-x-hidden"
-      {...pullToRefresh}
+      onTouchStart={onTouchStart}
+      onTouchMove={onTouchMove}
+      onTouchEnd={onTouchEnd}
     >
       {/* Pull to refresh indicator */}
       <div 
         className={cn(
           "fixed top-0 left-0 right-0 z-40 transition-transform duration-300",
-          pullToRefresh.showIndicator ? "translate-y-0" : "-translate-y-full"
+          showIndicator ? "translate-y-0" : "-translate-y-full"
         )}
       >
         <div className="glass-dark py-4 text-center">
           <i className={cn(
             "fas fa-sync-alt text-green-400",
-            pullToRefresh.isRefreshing && "animate-spin"
+            isRefreshing && "animate-spin"
           )} />
           <p className="text-white text-sm mt-2">
-            {pullToRefresh.isRefreshing ? "Refreshing..." : "Pull to refresh"}
+            {isRefreshing ? "Refreshing..." : "Pull to refresh"}
           </p>
         </div>
       </div>
