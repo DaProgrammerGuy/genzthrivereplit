@@ -55,8 +55,11 @@ export function MindsetSection({ onNavigate }: MindsetSectionProps) {
         
         {/* Final CTA */}
         <div className="space-y-4">
-          <Button className="w-full touch-target bg-gradient-to-r from-purple-500 via-pink-500 to-green-400 hover:from-purple-600 hover:via-pink-600 hover:to-green-500 rounded-2xl font-bold text-lg shadow-lg transform transition-all duration-200 active:scale-95 animate-pulse border-0">
-            Start Building Today 🔥
+          <Button 
+            className="w-full touch-target bg-gradient-to-r from-purple-500 via-pink-500 to-green-400 hover:from-purple-600 hover:via-pink-600 hover:to-green-500 rounded-2xl font-bold text-lg shadow-lg transform transition-all duration-200 active:scale-95 animate-pulse border-0"
+            onClick={() => window.open('https://linkedin.com/in/uzair-ahmed-me/', '_blank')}
+          >
+            Get Consultation Today 🔥
           </Button>
           
           <p className="text-gray-400 text-xs">
